@@ -31,6 +31,7 @@ def client_fixture(session: Session):
     yield TestClient(app)
     app.dependency_overrides.clear()
 
+
 def test_create_team(client: TestClient):
 
     response = client.post("/teams/", json={"name": "Avengers", "headquarters": "New York"})
@@ -40,10 +41,12 @@ def test_create_team(client: TestClient):
     assert data["name"] == "Avengers"
     assert data["headquarters"] == "New York"
         
+
 def test_create_team_invalid(client: TestClient):
     # missing name field
     response = client.post("/teams/", json={"headquarters": "New York"})
     assert response.status_code == 422
+
 
 def test_read_teams(session: Session, client: TestClient):
     team1_name = "Avengers"
@@ -62,6 +65,7 @@ def test_read_teams(session: Session, client: TestClient):
     assert len(data) == 2
     assert data[0]["name"] == team1_name
     assert data[1]["name"] == team2_name
+
 
 def test_create_hero(client: TestClient):
     response = client.post(

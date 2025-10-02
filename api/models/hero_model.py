@@ -4,7 +4,7 @@ from decimal import Decimal
 import uuid
 
 if TYPE_CHECKING:
-    from models.team_model import Team, TeamPublic
+    from ..models.team_model import Team, TeamPublic
 
 
 class HeroBase(SQLModel):

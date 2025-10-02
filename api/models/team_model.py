@@ -4,7 +4,7 @@ import uuid
 
 
 if TYPE_CHECKING:
-    from models.hero_model import Hero, HeroPublic
+    from ..models.hero_model import Hero, HeroPublic
 
 class TeamBase(SQLModel):
     name: str = Field(index=True)
