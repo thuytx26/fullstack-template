@@ -5,7 +5,7 @@ import pytest
 import uuid
 
 from .app  import app
-from .database import get_session
+from ..database import get_session
 from .models.team_model import Team
 from .models.hero_model import Hero
 

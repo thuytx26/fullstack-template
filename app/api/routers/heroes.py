@@ -2,9 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException
 import uuid
 from sqlmodel import select, Session
 
-from ..database import get_session
+from app.database import get_session
 
-from ..models.hero_model import (
+from app.models.hero_model import (
     Hero,
     HeroCreate,
     HeroPublic,
@@ -12,7 +12,7 @@ from ..models.hero_model import (
     HeroPublicWithTeam,
 )
 
-from ..models.team_model import Team
+from app.models.team_model import Team
 
 
 router = APIRouter(

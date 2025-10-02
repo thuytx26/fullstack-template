@@ -10,9 +10,9 @@ import uuid
 from sqlmodel import select, Session
 from typing import Annotated
 
-from ..database import get_session
+from app.database import get_session
 
-from ..models.team_model import (
+from app.models.team_model import (
     Team,
     TeamCreate,
     TeamPublic,
@@ -20,7 +20,7 @@ from ..models.team_model import (
     TeamPublicWithHeroes,
 )
 
-from ..models.hero_model import Hero
+from app.models.hero_model import Hero
 
 
 router = APIRouter(
