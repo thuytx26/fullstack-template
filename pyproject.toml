@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "learn-sqlmodel"
 version = "0.1.0"
@@ -10,3 +14,6 @@ dependencies = [
     "sqlmodel>=0.0.24",
     "uvicorn[standard]>=0.35.0",
 ]
+
+[tool.setuptools]
+packages = ["app"]
