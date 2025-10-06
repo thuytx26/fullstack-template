@@ -10,7 +10,7 @@ import uuid
 from sqlmodel import select, Session
 from typing import Annotated
 
-from app.database import get_session
+from app.core.database import get_session
 
 from app.models.team_model import (
     Team,

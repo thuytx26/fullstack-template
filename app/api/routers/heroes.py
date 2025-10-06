@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 import uuid
 from sqlmodel import select, Session
 
-from app.database import get_session
+from app.core.database import get_session
 
 from app.models.hero_model import (
     Hero,

@@ -9,6 +9,7 @@ if TYPE_CHECKING:
 class TeamBase(SQLModel):
     name: str = Field(index=True)
     headquarters: str | None = None
+    skill_level: Optional[int] = Field(default=1, ge=1, le=10)
 
 
 class Team(TeamBase, table=True):
