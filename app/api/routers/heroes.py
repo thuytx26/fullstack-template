@@ -2,10 +2,11 @@ from fastapi import APIRouter, Depends, HTTPException
 import uuid
 from sqlmodel import select, Session
 
-from app.core.database import get_session
+from app.api.deps import SessionDep
 
 from app.models.hero_model import (
     Hero,
+    # HeroBase,
     HeroCreate,
     HeroPublic,
     HeroUpdate,
@@ -14,15 +15,24 @@ from app.models.hero_model import (
 
 from app.models.team_model import Team
 
+# from app.api.deps import TokenDep, CurrentUser
+
 
 router = APIRouter(
     prefix="/heroes",
     tags=["heroes"],
 )
 
+# @router.get("/me", response_model=HeroBase)
+# async def read_users_me(current_user: CurrentUser):
+#     return current_user
+
+
 
 @router.post("/", response_model=HeroPublic)
-def create_hero(*, hero: HeroCreate, session: Session = Depends(get_session)):
+def create_hero(*, hero: HeroCreate, 
+                session: SessionDep,
+                ):
     db_hero = Hero.model_validate(hero)
 
     # check team_id exists
@@ -38,7 +48,11 @@ def create_hero(*, hero: HeroCreate, session: Session = Depends(get_session)):
 
 
 @router.get("/{hero_id}", response_model=HeroPublicWithTeam)
-def read_hero(*, hero_id: uuid.UUID, session: Session = Depends(get_session)):
+def read_hero(
+    *, 
+    hero_id: uuid.UUID, 
+    session: SessionDep
+):
     hero = session.get(Hero, hero_id)
     if not hero:
         raise HTTPException(status_code=404, detail="Hero not found")
@@ -48,9 +62,10 @@ def read_hero(*, hero_id: uuid.UUID, session: Session = Depends(get_session)):
 @router.get("/", response_model=list[HeroPublic])
 def read_heroes(
     *, 
-    session: Session = Depends(get_session), 
+    session: SessionDep, 
     offset: int = 0, 
-    limit: int = 100):
+    limit: int = 100
+):
     heroes = session.exec(select(Hero).offset(offset).limit(limit)).all()
     return heroes
 
@@ -60,7 +75,7 @@ def update_hero(
     *, 
     hero_id: uuid.UUID,
     hero: HeroUpdate, 
-    session: Session = Depends(get_session)
+    session: SessionDep
 ):
     db_hero = session.get(Hero, hero_id)
     if not db_hero:
@@ -74,7 +89,11 @@ def update_hero(
 
 
 @router.delete("/{hero_id}", response_model=HeroPublic)
-def delete_hero(*, hero_id: uuid.UUID, session: Session = Depends(get_session)):
+def delete_hero(
+    *,
+    hero_id: uuid.UUID, 
+    session: SessionDep
+):
     hero = session.get(Hero, hero_id)
     if not hero:
         raise HTTPException(status_code=404, detail="Hero not found")
