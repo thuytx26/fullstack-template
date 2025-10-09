@@ -2,7 +2,12 @@ from fastapi import APIRouter, Depends, HTTPException
 import uuid
 from sqlmodel import select, Session
 
-from app.api.deps import SessionDep
+
+from app.api.deps import (
+    SessionDep, 
+    TokenDep, 
+    CurrentUserDep,
+)
 
 from app.models.hero_model import (
     Hero,
@@ -14,8 +19,9 @@ from app.models.hero_model import (
 )
 
 from app.models.team_model import Team
+from app.core.security import get_password_hash
+from app.utils import crud
 
-# from app.api.deps import TokenDep, CurrentUser
 
 
 router = APIRouter(
@@ -23,9 +29,12 @@ router = APIRouter(
     tags=["heroes"],
 )
 
-# @router.get("/me", response_model=HeroBase)
-# async def read_users_me(current_user: CurrentUser):
-#     return current_user
+
+@router.get("/me", response_model=HeroPublic)
+async def read_users_me(
+    current_user: CurrentUserDep,
+):
+    return current_user
 
 
 
@@ -33,7 +42,18 @@ router = APIRouter(
 def create_hero(*, hero: HeroCreate, 
                 session: SessionDep,
                 ):
-    db_hero = Hero.model_validate(hero)
+    # check if hero exits
+    db_hero = crud.get_hero_from_username(session, hero.name)
+    if db_hero:
+        raise HTTPException(
+            status_code=400, 
+            detail="Hero already exists"
+        )
+
+    db_hero = Hero.model_validate(
+        hero, 
+        update = {"hashed_password" : get_password_hash(hero.password)}
+    )
 
     # check team_id exists
     if db_hero.team_id:

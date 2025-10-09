@@ -8,7 +8,7 @@ if TYPE_CHECKING:
 
 
 class HeroBase(SQLModel):
-    name: str = Field(index=True)
+    name: str = Field(index=True, unique=True)
     secret_name: str
     age: int | None = Field(default=None, index=True)
     money: Decimal = Field(default=0, max_digits=5, decimal_places=3)
@@ -20,10 +20,11 @@ class Hero(HeroBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
 
     team: Optional["Team"] = Relationship(back_populates="heroes")
+    hashed_password : str
 
 
 class HeroCreate(HeroBase):
-    pass
+    password : str = Field(default=..., min_length=8, max_length=40)
 
 
 class HeroPublic(HeroBase):
