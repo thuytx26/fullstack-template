@@ -7,7 +7,7 @@ if TYPE_CHECKING:
     from ..models.user_model import User, UserPublic
 
 class TeamBase(SQLModel):
-    name: str = Field(index=True)
+    name: str = Field(index=True, unique=True, max_length=255)
     headquarters: str | None = None
     skill_level: Optional[int] = Field(default=1, ge=1, le=10)
 
