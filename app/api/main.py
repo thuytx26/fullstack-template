@@ -1,10 +1,11 @@
 from fastapi import APIRouter
 
 
-from app.api.routers import teams, heroes
+from app.api.routers import teams, heroes, login
 
 api_router = APIRouter()
 
 
 api_router.include_router(teams.router)
 api_router.include_router(heroes.router)
+api_router.include_router(login.router)

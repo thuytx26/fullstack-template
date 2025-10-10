@@ -10,8 +10,6 @@ import uuid
 from sqlmodel import select, Session
 from typing import Annotated
 
-from app.core.database import get_session
-
 from app.models.team_model import (
     Team,
     TeamCreate,
@@ -22,6 +20,10 @@ from app.models.team_model import (
 
 from app.models.hero_model import Hero
 
+from app.api.deps import (
+    SessionDep,
+    # TokenDep
+)
 
 router = APIRouter(
     prefix="/teams",
@@ -32,7 +34,8 @@ router = APIRouter(
 def create_team(
     *,
     team: Annotated[TeamCreate, Body(title="Team to create")],
-    session: Session = Depends(get_session)
+    session: SessionDep,
+    # token: TokenDep
     ):
     db_team = Team.model_validate(team)
     session.add(db_team)
@@ -42,7 +45,11 @@ def create_team(
     
 
 @router.get("/{team_id}", response_model=TeamPublicWithHeroes)
-def read_team(*, team_id: uuid.UUID, session: Session = Depends(get_session)):
+def read_team(
+    *, 
+    team_id: uuid.UUID, 
+    session: SessionDep
+):
     team = session.get(Team, team_id)
     if not team:
         raise HTTPException(status_code=404, detail="Team not found")
@@ -50,13 +57,23 @@ def read_team(*, team_id: uuid.UUID, session: Session = Depends(get_session)):
 
 
 @router.get("/", response_model=list[TeamPublic])
-def read_teams(*, session: Session = Depends(get_session), offset: int = 0, limit: int = 100):
+def read_teams(
+    *, 
+    session: SessionDep, 
+    offset: int = 0, 
+    limit: int = 100
+):
     teams = session.exec(select(Team).offset(offset).limit(limit)).all()
     return teams
 
 
 @router.patch("/{team_id}", response_model=TeamPublic)
-def update_team(*, team_id: uuid.UUID, team: TeamUpdate, session: Session = Depends(get_session)):
+def update_team(
+    *, 
+    team_id: uuid.UUID, 
+    team: TeamUpdate, 
+    session: SessionDep
+):
     db_team = session.get(Team, team_id)
     if not db_team:
         raise HTTPException(status_code=404, detail="Team not found")
@@ -69,7 +86,11 @@ def update_team(*, team_id: uuid.UUID, team: TeamUpdate, session: Session = Depe
 
 
 @router.delete("/{team_id}", response_model=TeamPublic)
-def delete_team(*, team_id: uuid.UUID, session: Session = Depends(get_session)):
+def delete_team(
+    *, 
+    team_id: uuid.UUID,
+    session: SessionDep
+):
     team = session.get(Team, team_id)
     if not team:
         raise HTTPException(status_code=404, detail="Team not found")
