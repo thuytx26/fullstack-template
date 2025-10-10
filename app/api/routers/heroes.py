@@ -30,41 +30,37 @@ router = APIRouter(
 )
 
 
-@router.get("/me", response_model=HeroPublic)
+@router.get("/me", response_model=HeroPublicWithTeam)
 async def read_users_me(
     current_user: CurrentUserDep,
 ):
     return current_user
 
-
+# Create
 
 @router.post("/", response_model=HeroPublic)
-def create_hero(*, hero: HeroCreate, 
-                session: SessionDep,
-                ):
-    # check if hero exits
-    db_hero = crud.get_hero_from_username(session, hero.name)
+def create_hero(
+    *, 
+    session: SessionDep,
+    hero_in: HeroCreate, 
+):
+    
+    db_hero = crud.get_hero_from_username(
+        session, 
+        hero_in.name
+    )
     if db_hero:
         raise HTTPException(
             status_code=400, 
             detail="Hero already exists"
         )
-
-    db_hero = Hero.model_validate(
-        hero, 
-        update = {"hashed_password" : get_password_hash(hero.password)}
+    
+    hero = crud.create_user(
+        session,
+        hero_in,
     )
-
-    # check team_id exists
-    if db_hero.team_id:
-        team = session.get(Team, db_hero.team_id)
-        if not team:
-            raise HTTPException(status_code=400, detail="Team not found")
-
-    session.add(db_hero)
-    session.commit()
-    session.refresh(db_hero)
-    return db_hero
+    
+    return hero
 
 
 @router.get("/{hero_id}", response_model=HeroPublicWithTeam)
