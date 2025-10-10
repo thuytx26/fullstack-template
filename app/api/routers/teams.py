@@ -2,6 +2,7 @@ from fastapi import (
     APIRouter, 
     Depends, 
     HTTPException,
+    status,
     Body,
     Path,
     Query,
@@ -30,7 +31,7 @@ router = APIRouter(
     tags=["teams"],
 )
 
-@router.post("/", response_model=TeamPublic)
+@router.post("/", response_model=TeamPublic, status_code=status.HTTP_201_CREATED)
 def create_team(
     *,
     team: Annotated[TeamCreate, Body(title="Team to create")],
@@ -52,7 +53,10 @@ def read_team(
 ):
     team = session.get(Team, team_id)
     if not team:
-        raise HTTPException(status_code=404, detail="Team not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, 
+            detail="Team not found"
+        )
     return team
 
 
@@ -76,7 +80,10 @@ def update_team(
 ):
     db_team = session.get(Team, team_id)
     if not db_team:
-        raise HTTPException(status_code=404, detail="Team not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, 
+            detail="Team not found"
+        )
     team_data = team.model_dump(exclude_unset=True)
     db_team.sqlmodel_update(team_data)
     session.add(db_team)
@@ -85,7 +92,7 @@ def update_team(
     return db_team
 
 
-@router.delete("/{team_id}", response_model=TeamPublic)
+@router.delete("/{team_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_team(
     *, 
     team_id: uuid.UUID,
@@ -93,7 +100,9 @@ def delete_team(
 ):
     team = session.get(Team, team_id)
     if not team:
-        raise HTTPException(status_code=404, detail="Team not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, 
+            detail="Team not found"
+        )
     session.delete(team)
     session.commit()
-    return team

@@ -1,4 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import (
+    APIRouter, 
+    Depends, 
+    HTTPException, 
+    status,
+)
 import uuid
 from sqlmodel import (
     select, 
@@ -43,7 +48,7 @@ async def read_users_me(
 
 # Create
 
-@router.post("/", response_model=UserPublic)
+@router.post("/", response_model=UserPublic, status_code=status.HTTP_201_CREATED)
 def create_user(
     *, 
     session: SessionDep,
@@ -56,8 +61,8 @@ def create_user(
     )
     if db_user:
         raise HTTPException(
-            status_code=400, 
-            detail="User already exists"
+            status_code=status.HTTP_409_CONFLICT, 
+            detail="User with this name already exists"
         )
     
     user = crud.create_user(
@@ -76,7 +81,10 @@ def read_user(
 ):
     user = session.get(User, user_id)
     if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, 
+            detail="User not found"
+        )
     return user
 
 
@@ -108,7 +116,7 @@ def update_user(
     db_user = session.get(User, user_id)
     if not db_user:
         raise HTTPException(
-            status_code=404, 
+            status_code=status.HTTP_404_NOT_FOUND, 
             detail="User not found"
         )
     
@@ -119,15 +127,15 @@ def update_user(
         )
         if existing_user and existing_user.id != user_id:
             raise HTTPException(
-                status_code=400, 
-                detail="User with this name is already exists"
+                status_code=status.HTTP_409_CONFLICT, 
+                detail="User with this name already exists"
             )
     
     if user_in.team_id:
         team = session.get(Team, user_in.team_id)
         if not team:
             raise HTTPException(
-                status_code=400, 
+                status_code=status.HTTP_404_NOT_FOUND, 
                 detail="Team not found"
             )
 
@@ -139,7 +147,7 @@ def update_user(
     return db_user
 
 
-@router.delete("/{user_id}", response_model=UserPublic)
+@router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_user(
     *,
     session: SessionDep,
@@ -147,7 +155,9 @@ def delete_user(
 ):
     user = session.get(User, user_id)
     if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, 
+            detail="User not found"
+        )
     session.delete(user)
     session.commit()
-    return user

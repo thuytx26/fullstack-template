@@ -1,5 +1,6 @@
 from sqlmodel import Session, select
 from fastapi.exceptions import HTTPException
+from fastapi import status
 
 from app.models.user_model import (
     User, 
@@ -38,7 +39,10 @@ def create_user(
     if db_obj.team_id:
         team = session.get(Team, db_obj.team_id)
         if not team:
-            raise HTTPException(status_code=400, detail="Team not found")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, 
+                detail="Team not found"
+                )
 
     session.add(db_obj)
     session.commit()
