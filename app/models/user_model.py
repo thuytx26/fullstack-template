@@ -28,17 +28,21 @@ class User(UserBase, table=True):
 # Create
 
 class UserCreate(UserBase):
-    password : str = Field(min_length=8, max_length=40)
+    hashed_password : str = Field(min_length=8, max_length=40)
 
 class UserRegister(SQLModel):
     name: str = Field(max_length=255)
-    password: str = Field(min_length=8, max_length=40)
+    hashed_password: str = Field(min_length=8, max_length=40)
 
 
 # Read
 
 class UserPublic(UserBase):
     id: uuid.UUID
+
+class UsersPublic(SQLModel):
+    data: list[UserPublic]
+    count: int
 
 class UserPublicWithTeam(UserPublic):
     team: Optional["TeamPublic"] = None
@@ -48,3 +52,4 @@ class UserPublicWithTeam(UserPublic):
 
 class UserUpdate(UserBase):
     name: str = Field(default=None, max_length=255)
+    hashed_password : str = Field(default=None, min_length=8, max_length=40)
