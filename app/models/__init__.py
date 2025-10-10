@@ -1,6 +1,6 @@
-from .hero_model import HeroPublicWithTeam, HeroPublic
-from .team_model import TeamPublicWithHeroes, TeamPublic
+from .user_model import UserPublicWithTeam, UserPublic
+from .team_model import TeamPublicWithUsers, TeamPublic
 
 
-for m in [TeamPublicWithHeroes, HeroPublicWithTeam]:
+for m in [TeamPublicWithUsers, UserPublicWithTeam]:
     m.model_rebuild()

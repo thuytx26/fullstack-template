@@ -15,10 +15,10 @@ from app.models.team_model import (
     TeamCreate,
     TeamPublic,
     TeamUpdate,
-    TeamPublicWithHeroes,
+    TeamPublicWithUsers,
 )
 
-from app.models.hero_model import Hero
+from app.models.user_model import User
 
 from app.api.deps import (
     SessionDep,
@@ -44,7 +44,7 @@ def create_team(
     return db_team
     
 
-@router.get("/{team_id}", response_model=TeamPublicWithHeroes)
+@router.get("/{team_id}", response_model=TeamPublicWithUsers)
 def read_team(
     *, 
     team_id: uuid.UUID, 

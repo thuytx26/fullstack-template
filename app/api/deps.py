@@ -5,7 +5,7 @@ from typing import Annotated
 import jwt
 
 from app.core.database import engine
-from app.models.hero_model import HeroBase
+from app.models.user_model import UserBase
 from app.core.config import settings
 from app.core.security import ALGORITHM
 
@@ -13,7 +13,7 @@ from app.models.token_model import(
     TokenData
 )
 
-from app.utils.crud import get_hero_from_username
+from app.utils.crud import get_user_from_username
 
 
 
@@ -54,9 +54,9 @@ async def get_current_user(
         token_data = TokenData(username=username)
     except InvalidTokenError:
         raise credentials_exception
-    user = get_hero_from_username(session, token_data.username)
+    user = get_user_from_username(session, token_data.username)
     if user is None:
         raise credentials_exception
     return user
 
-CurrentUserDep = Annotated[HeroBase, Depends(get_current_user)]
+CurrentUserDep = Annotated[UserBase, Depends(get_current_user)]

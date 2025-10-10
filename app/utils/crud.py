@@ -1,10 +1,10 @@
 from sqlmodel import Session, select
 from fastapi.exceptions import HTTPException
 
-from app.models.hero_model import (
-    Hero, 
-    HeroPublic,
-    HeroCreate
+from app.models.user_model import (
+    User, 
+    UserPublic,
+    UserCreate
 )
 
 from app.models.team_model import (
@@ -16,23 +16,23 @@ from app.core.security import get_password_hash
 
 
 
-def get_hero_from_username(
+def get_user_from_username(
         session: Session, 
         username: str
-) -> Hero | None:
-    statement = select(Hero).where(Hero.name == username)
-    hero = session.exec(statement).first()
-    return hero
+) -> User | None:
+    statement = select(User).where(User.name == username)
+    user = session.exec(statement).first()
+    return user
 
 
 def create_user(
         session: Session, 
-        hero_create: HeroCreate
-) -> Hero:
+        user_create: UserCreate
+) -> User:
     
-    db_obj = Hero.model_validate(
-        hero_create, 
-        update = {"hashed_password" : get_password_hash(hero_create.password)}
+    db_obj = User.model_validate(
+        user_create, 
+        update = {"hashed_password" : get_password_hash(user_create.password)}
     )
 
     if db_obj.team_id:

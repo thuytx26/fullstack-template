@@ -6,7 +6,7 @@ from sqlalchemy import pool
 
 from alembic import context
 
-from app.models.hero_model import Hero
+from app.models.user_model import User
 from app.models.team_model import Team
 
 # this is the Alembic Config object, which provides

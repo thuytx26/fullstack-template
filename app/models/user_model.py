@@ -9,7 +9,7 @@ if TYPE_CHECKING:
 
 # Base model
 
-class HeroBase(SQLModel):
+class UserBase(SQLModel):
     name: str = Field(index=True, unique=True, max_length=255)
     secret_name: str | None = Field(default=None)
     age: int | None = Field(default=None, index=True)
@@ -19,32 +19,32 @@ class HeroBase(SQLModel):
 
 # Table model
 
-class Hero(HeroBase, table=True):
+class User(UserBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    team: Optional["Team"] = Relationship(back_populates="heroes")
+    team: Optional["Team"] = Relationship(back_populates="users")
     hashed_password: str
 
 
 # Create
 
-class HeroCreate(HeroBase):
+class UserCreate(UserBase):
     password : str = Field(min_length=8, max_length=40)
 
-class HeroRegister(SQLModel):
+class UserRegister(SQLModel):
     name: str = Field(max_length=255)
     password: str = Field(min_length=8, max_length=40)
 
 
 # Read
 
-class HeroPublic(HeroBase):
+class UserPublic(UserBase):
     id: uuid.UUID
 
-class HeroPublicWithTeam(HeroPublic):
+class UserPublicWithTeam(UserPublic):
     team: Optional["TeamPublic"] = None
 
 
 #update
 
-class HeroUpdate(HeroBase):
+class UserUpdate(UserBase):
     name: str = Field(default=None, max_length=255)

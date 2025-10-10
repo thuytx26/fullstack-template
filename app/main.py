@@ -11,8 +11,8 @@ from app.models.team_model import (
     Team,
 )
 
-from app.models.hero_model import (
-    Hero,
+from app.models.user_model import (
+    User,
 )
 
 
