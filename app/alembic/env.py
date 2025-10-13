@@ -9,6 +9,9 @@ from alembic import context
 from app.models.user_model import User
 from app.models.team_model import Team
 
+from app.core.config import settings
+
+
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
@@ -31,6 +34,11 @@ target_metadata = SQLModel.metadata
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
+
+def get_url():
+    return str(settings.SQLALCHEMY_DATABASE_URI)
+
+config.set_main_option("sqlalchemy.url", get_url())
 
 
 def run_migrations_offline() -> None:
