@@ -4,17 +4,25 @@ from fastapi import status
 
 from app.models.user_model import (
     User, 
+
+    UserCreate,
+    UserRegister,
+
     UserPublic,
-    UserCreate
+    
+    UserUpdate,
+    UserUpdateMe,
+    UpdatePassword,
 )
 
 from app.models.team_model import (
     Team
 )
 
-from app.core.security import get_password_hash
-
-
+from app.core.security import (
+    get_password_hash,
+    verify_password,
+)
 
 
 def get_user_from_username(
@@ -49,17 +57,32 @@ def create_user(
     session.refresh(db_obj)
     return db_obj
 
+def register_user(
+    session: Session, 
+    user_register: UserRegister
+) -> User:
+    db_obj = User.model_validate(
+        user_register, 
+        update = {"hashed_password" : get_password_hash(user_register.password)}
+    )
+
+    session.add(db_obj)
+    session.commit()
+    session.refresh(db_obj)
+    return db_obj
+        
+
 
 def update_user(
     session: Session,
     db_user: User,
-    user_in: UserCreate,
+    user_in: UserUpdate,
 ) -> User:
     user_data = user_in.model_dump(exclude_unset=True)
     user_extras = {}
 
     if user_in.hashed_password:
-        user_extras["hashed_password"] = get_password_hash(user_in.hashed_password)
+        user_extras["hashed_password"] = get_password_hash(user_in.password)
 
     db_user.sqlmodel_update(user_data, update=user_extras)
 
@@ -67,3 +90,28 @@ def update_user(
     session.commit()
     session.refresh(db_user)
     return db_user
+
+
+def update_user_me(
+    session: Session,
+    db_user: User,
+    user_in: UserUpdateMe,
+):
+    user_data = user_in.model_dump(exclude_unset=True)
+    
+    db_user.sqlmodel_update(user_data)
+    session.add(db_user)
+    session.commit()
+    session.refresh(db_user)
+    return db_user
+
+
+def update_password(
+    session: Session,
+    db_user: User,
+    update_password: UpdatePassword,
+):
+    db_user.hashed_password = get_password_hash(update_password.new_password)
+
+    session.add(db_user)
+    session.commit()

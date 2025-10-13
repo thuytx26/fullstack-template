@@ -5,7 +5,7 @@ from typing import Annotated
 import jwt
 
 from app.core.database import engine
-from app.models.user_model import UserBase
+from app.models.user_model import User
 from app.core.config import settings
 from app.core.security import ALGORITHM
 
@@ -36,7 +36,7 @@ TokenDep = Annotated[str, Depends(oauth2_scheme)]
 async def get_current_user(
         session: SessionDep,
         token: TokenDep
-    ):
+    ) -> User:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -59,4 +59,15 @@ async def get_current_user(
         raise credentials_exception
     return user
 
-CurrentUserDep = Annotated[UserBase, Depends(get_current_user)]
+CurrentUserDep = Annotated[User, Depends(get_current_user)]
+
+
+async def get_current_superuser(
+    current_user: CurrentUserDep
+) -> User:
+    if not current_user.is_superuser:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="The user doesn't have enough privileges"
+        )
+    return current_user
