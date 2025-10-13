@@ -4,10 +4,10 @@ import uuid
 
 
 if TYPE_CHECKING:
-    from ..models.hero_model import Hero, HeroPublic
+    from ..models.user_model import User, UserPublic
 
 class TeamBase(SQLModel):
-    name: str = Field(index=True)
+    name: str = Field(index=True, unique=True, max_length=255)
     headquarters: str | None = None
     skill_level: Optional[int] = Field(default=1, ge=1, le=10)
 
@@ -15,7 +15,7 @@ class TeamBase(SQLModel):
 class Team(TeamBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
 
-    heroes: list["Hero"] = Relationship(back_populates="team")
+    users: list["User"] = Relationship(back_populates="team")
     
 
 class TeamCreate(TeamBase):
@@ -26,8 +26,8 @@ class TeamPublic(TeamBase):
     id: uuid.UUID
 
 
-class TeamPublicWithHeroes(TeamPublic):
-    heroes: list["HeroPublic"] = []
+class TeamPublicWithUsers(TeamPublic):
+    users: list["UserPublic"] = []
 
 class TeamUpdate(SQLModel):
     name: str | None = None

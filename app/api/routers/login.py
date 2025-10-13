@@ -7,6 +7,7 @@ from fastapi import (
     HTTPException,
     status,
 )
+
 from fastapi.security import OAuth2PasswordRequestForm
 
 
@@ -34,27 +35,19 @@ def login_for_access_token(
             headers={"WWW-Authenticate": "Bearer"},
         )
     
-    hero = crud.get_hero_from_username(session, form_data.username)
+    user = crud.get_user_from_username(session, form_data.username)
 
-    if not hero:
+    if not user:
         raise incorrect_username_password_exception
 
-    if not verify_password(form_data.password, hero.hashed_password):
+    if not verify_password(form_data.password, user.hashed_password):
         raise incorrect_username_password_exception
     
     expires_delta = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
 
     access_token = create_access_token(
-        data = {"sub" : hero.name},
+        data = {"sub" : user.name},
         expires_delta = expires_delta
     )
 
     return Token(access_token=access_token, token_type="bearer")
-    
-
-
-
-
-
-
-
