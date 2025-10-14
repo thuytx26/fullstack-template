@@ -11,6 +11,14 @@
                 "--reload"
             ],
             "jinja": true
+        },
+        {
+            "name": "Debug Pytest",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "pytest",
+            "justMyCode": false,
+            "cwd": "${workspaceFolder}/backend"
         }
     ]
 }
