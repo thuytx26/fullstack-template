@@ -26,5 +26,6 @@ class Settings(BaseSettings):
     FIRST_SUPERUSER_NAME: str = Field(max_length=255)
     FIRST_SUPERUSER_PASSWORD: str = Field(min_length=8, max_length=40)
 
+    TEST_NORMAL_USER_NAME: str = "testuser"
 
 settings = Settings()

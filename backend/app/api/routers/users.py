@@ -31,7 +31,7 @@ from app.models.user_model import (
 
     UserUpdate,
     UserUpdateMe,
-    UpdatePassword,
+    UserUpdatePassword,
 )
 
 from app.models.utils_model import (
@@ -205,7 +205,7 @@ def update_user_password(
     *,
     session: SessionDep,
     current_user: CurrentUserDep,
-    update_password: UpdatePassword,
+    update_password: UserUpdatePassword,
 ):
     # verify password
     if not verify_password(

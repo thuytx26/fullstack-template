@@ -65,6 +65,6 @@ class UserUpdateMe(SQLModel):
     team_id: uuid.UUID | None = Field(default=None, foreign_key="team.id")
 
 
-class UpdatePassword(SQLModel):
+class UserUpdatePassword(SQLModel):
     old_password: str = Field(min_length=8, max_length=40)
     new_password: str = Field(min_length=8, max_length=40)

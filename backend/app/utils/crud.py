@@ -12,7 +12,7 @@ from app.models.user_model import (
     
     UserUpdate,
     UserUpdateMe,
-    UpdatePassword,
+    UserUpdatePassword,
 )
 
 from app.models.team_model import (
@@ -109,7 +109,7 @@ def update_user_me(
 def update_password(
     session: Session,
     db_user: User,
-    update_password: UpdatePassword,
+    update_password: UserUpdatePassword,
 ):
     db_user.hashed_password = get_password_hash(update_password.new_password)
 
