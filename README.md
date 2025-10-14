@@ -1,1 +1,1 @@
-# Learn SQLModel
+# Fullstack Template
