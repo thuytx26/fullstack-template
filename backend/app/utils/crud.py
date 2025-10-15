@@ -81,7 +81,7 @@ def update_user(
     user_data = user_in.model_dump(exclude_unset=True)
     user_extras = {}
 
-    if user_in.hashed_password:
+    if user_in.password:
         user_extras["hashed_password"] = get_password_hash(user_in.password)
 
     db_user.sqlmodel_update(user_data, update=user_extras)

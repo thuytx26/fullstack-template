@@ -11,37 +11,27 @@ from sqlmodel import (
     func
 )
 
-
 from app.api.deps import (
     SessionDep, 
     TokenDep, 
     CurrentUserDep,
     get_current_superuser,
 )
-
 from app.models.user_model import (
     User,
-    
     UserCreate,
     UserRegister,
-
     UserPublic,
     UsersPublic,
     UserPublicWithTeam,
-
     UserUpdate,
     UserUpdateMe,
     UserUpdatePassword,
 )
-
-from app.models.utils_model import (
-    Message,
-)
-
+from app.models.utils_model import Message
 from app.models.team_model import Team
 from app.core.security import get_password_hash
 from app.utils import crud
-
 from app.core.security import verify_password
 
 
@@ -51,40 +41,8 @@ router = APIRouter(
 )
 
 
-# Create
-
 @router.post(
-    "/", 
-    response_model=UserPublic, 
-    dependencies=[Depends(get_current_superuser)],
-    status_code=status.HTTP_201_CREATED,
-)
-def create_user(
-    *, 
-    session: SessionDep,
-    user_in: UserCreate, 
-):
-    
-    db_user = crud.get_user_from_username(
-        session, 
-        user_in.name
-    )
-    if db_user:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT, 
-            detail="User with this name already exists"
-        )
-    
-    user = crud.create_user(
-        session,
-        user_in,
-    )
-    
-    return user
-
-
-@router.post(
-    "/register",
+    "/signup",
     response_model=UserPublic,
     status_code=status.HTTP_201_CREATED,
 )
@@ -107,69 +65,11 @@ def register_user(
     return user
 
 
-# Read
-
-
 @router.get("/me", response_model=UserPublicWithTeam)
 async def read_user_me(
     current_user: CurrentUserDep,
 ):
     return current_user
-
-
-@router.get(
-    "/{user_id}",
-    response_model=UserPublicWithTeam,
-)
-def read_user(
-    *, 
-    session: SessionDep,
-    user_id: uuid.UUID, 
-    current_user: CurrentUserDep,
-):
-    user = session.get(User, user_id)
-
-    if current_user.is_superuser:
-        if not user:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="The user with this id doesn't exist in the system",
-            )
-        return user
-
-    # For regular users:
-    # Only return a successful response if the user exists AND it is the user themselves.
-    # In ALL other cases (user does not exist, or user is another user),
-    # return a 404 error to prevent user enumeration attacks.
-    if user and user.id == current_user.id:
-        return user
-    else:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="The user with this id doesn't exist in the system",
-        )
-
-
-@router.get(
-    "/", 
-    dependencies=[Depends(get_current_superuser)],
-    response_model=UsersPublic
-)
-def read_users(
-    *, 
-    session: SessionDep, 
-    offset: int = 0, 
-    limit: int = 100
-):
-    count_statement = select(func.count()).select_from(User)
-    count = session.exec(count_statement).one()
-
-    statement = select(User).offset(offset).limit(limit)
-    users = session.exec(statement).all()
-    return UsersPublic(data=users, count=count)
-
-
-# Update
 
 
 @router.patch(
@@ -240,6 +140,106 @@ def update_user_password(
     return Message(message="Password updated successfully")
 
 
+@router.delete(
+    "/me", 
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+def delete_user_me(
+    *,
+    session: SessionDep,
+    current_user: CurrentUserDep, 
+):
+    if current_user.is_superuser:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Super users are not allowed to delete themselves",
+        )
+    session.delete(current_user)
+    session.commit()
+
+
+@router.get(
+    "/", 
+    dependencies=[Depends(get_current_superuser)],
+    response_model=UsersPublic
+)
+def read_users(
+    *, 
+    session: SessionDep, 
+    offset: int = 0, 
+    limit: int = 100
+):
+    count_statement = select(func.count()).select_from(User)
+    count = session.exec(count_statement).one()
+
+    statement = select(User).offset(offset).limit(limit)
+    users = session.exec(statement).all()
+    return UsersPublic(data=users, count=count)
+
+
+@router.post(
+    "/", 
+    response_model=UserPublic, 
+    dependencies=[Depends(get_current_superuser)],
+    status_code=status.HTTP_201_CREATED,
+)
+def create_user(
+    *, 
+    session: SessionDep,
+    user_in: UserCreate, 
+):
+    
+    db_user = crud.get_user_from_username(
+        session, 
+        user_in.name
+    )
+    if db_user:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, 
+            detail="User with this name already exists"
+        )
+    
+    user = crud.create_user(
+        session,
+        user_in,
+    )
+    
+    return user
+
+
+@router.get(
+    "/{user_id}",
+    response_model=UserPublicWithTeam,
+)
+def read_user(
+    *, 
+    session: SessionDep,
+    user_id: uuid.UUID, 
+    current_user: CurrentUserDep,
+):
+    user = session.get(User, user_id)
+
+    if current_user.is_superuser:
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="The user with this id doesn't exist in the system",
+            )
+        return user
+
+    # For regular users:
+    # Only return a successful response if the user exists AND it is the user themselves.
+    # In ALL other cases (user does not exist, or user is another user),
+    # return a 404 error to prevent user enumeration attacks.
+    if user and user.id == current_user.id:
+        return user
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="The user doesn't have enough privileges",
+        )
+
+
 @router.patch(
     "/{user_id}", 
     dependencies=[Depends(get_current_superuser)],
@@ -283,26 +283,6 @@ def update_user(
         user_in,
     )
     return db_user
-
-
-# Delete
-
-@router.delete(
-    "/me", 
-    status_code=status.HTTP_204_NO_CONTENT,
-)
-def delete_user_me(
-    *,
-    session: SessionDep,
-    current_user: CurrentUserDep, 
-):
-    if current_user.is_superuser:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Super users are not allowed to delete themselves",
-        )
-    session.delete(current_user)
-    session.commit()
 
 
 @router.delete(
