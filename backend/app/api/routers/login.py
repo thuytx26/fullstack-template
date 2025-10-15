@@ -11,7 +11,7 @@ from fastapi import (
 from fastapi.security import OAuth2PasswordRequestForm
 
 
-from app.utils import crud
+from app.utils import crud, utils
 from app.core.security import (
     verify_password,
     create_access_token
@@ -35,12 +35,13 @@ def login_for_access_token(
             headers={"WWW-Authenticate": "Bearer"},
         )
     
-    user = crud.get_user_from_username(session, form_data.username)
+    user = utils.authentication(
+        session=session,
+        username=form_data.username,
+        password=form_data.password,
+    )
 
     if not user:
-        raise incorrect_username_password_exception
-
-    if not verify_password(form_data.password, user.hashed_password):
         raise incorrect_username_password_exception
     
     expires_delta = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)

@@ -120,20 +120,34 @@ async def read_user_me(
 @router.get(
     "/{user_id}",
     response_model=UserPublicWithTeam,
-    dependencies=[Depends(get_current_superuser)],
 )
 def read_user(
     *, 
     session: SessionDep,
     user_id: uuid.UUID, 
+    current_user: CurrentUserDep,
 ):
     user = session.get(User, user_id)
-    if not user:
+
+    if current_user.is_superuser:
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="The user with this id doesn't exist in the system",
+            )
+        return user
+
+    # For regular users:
+    # Only return a successful response if the user exists AND it is the user themselves.
+    # In ALL other cases (user does not exist, or user is another user),
+    # return a 404 error to prevent user enumeration attacks.
+    if user and user.id == current_user.id:
+        return user
+    else:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, 
-            detail="User not found"
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="The user with this id doesn't exist in the system",
         )
-    return user
 
 
 @router.get(
@@ -282,6 +296,11 @@ def delete_user_me(
     session: SessionDep,
     current_user: CurrentUserDep, 
 ):
+    if current_user.is_superuser:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Super users are not allowed to delete themselves",
+        )
     session.delete(current_user)
     session.commit()
 
@@ -301,6 +320,11 @@ def delete_user(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, 
             detail="User not found"
+        )
+    if user.is_superuser:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Super users are not allowed to delete themselves",
         )
     session.delete(user)
     session.commit()
