@@ -130,6 +130,11 @@ def update_user_password(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Incorrect password",
         )
+    if update_password.old_password == update_password.new_password:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="New password cannot be the same as the current one"
+        )
     
     crud.update_password(
         session=session,
@@ -255,7 +260,7 @@ def update_user(
     if not db_user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, 
-            detail="User not found"
+            detail="The user with this id does not exist in the system"
         )
     
     if user_in.name:
@@ -299,7 +304,7 @@ def delete_user(
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, 
-            detail="User not found"
+            detail="The user with this id does not exist in the system"
         )
     if user.is_superuser:
         raise HTTPException(
