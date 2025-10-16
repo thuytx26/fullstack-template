@@ -12,7 +12,7 @@ from app.models.user_model import (
     
     UserUpdate,
     UserUpdateMe,
-    UpdatePassword,
+    UserUpdatePassword,
 )
 
 from app.models.team_model import (
@@ -81,7 +81,7 @@ def update_user(
     user_data = user_in.model_dump(exclude_unset=True)
     user_extras = {}
 
-    if user_in.hashed_password:
+    if user_in.password:
         user_extras["hashed_password"] = get_password_hash(user_in.password)
 
     db_user.sqlmodel_update(user_data, update=user_extras)
@@ -109,7 +109,7 @@ def update_user_me(
 def update_password(
     session: Session,
     db_user: User,
-    update_password: UpdatePassword,
+    update_password: UserUpdatePassword,
 ):
     db_user.hashed_password = get_password_hash(update_password.new_password)
 

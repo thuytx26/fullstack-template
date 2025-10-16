@@ -29,7 +29,7 @@ def get_session():
 SessionDep = Annotated[Session, Depends(get_session)]
 
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login/access-token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/login/access-token")
 
 TokenDep = Annotated[str, Depends(oauth2_scheme)]
 
