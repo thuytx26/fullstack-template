@@ -2,10 +2,7 @@ from sqlmodel import Session
 
 from app.utils import auth
 from app.core.security import settings
-from tests.utils.generate_random_data import (
-    random_username,
-    random_password,
-)
+from tests.utils.generate_random_data import random_password
 
 
 def test_authenticate_user(
@@ -18,7 +15,7 @@ def test_authenticate_user(
     )
     assert authenticated_user
     assert authenticated_user.name == settings.FIRST_SUPERUSER_NAME
-    assert authenticated_user.is_superuser == True
+    assert authenticated_user.is_superuser
 
 
 def test_not_authenticate_user(

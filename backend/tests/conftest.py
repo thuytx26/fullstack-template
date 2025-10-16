@@ -12,9 +12,6 @@ from tests.utils.users import (
 )
 
 
-from app.models import team_model
-from app.models import user_model
-
 from app.core.config import settings
 from app.core.database import init_db
 

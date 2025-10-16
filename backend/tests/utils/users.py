@@ -2,12 +2,8 @@ from sqlmodel import Session
 from fastapi.testclient import TestClient
 
 from app.core.config import settings
-from tests.utils.generate_random_data import (
-    random_username,
-    random_password,
-)
+from tests.utils.generate_random_data import random_password
 from app.models.user_model import (
-    User, 
     UserRegister,
     UserUpdate
 )
@@ -20,7 +16,7 @@ def user_authentication_headers(
     password: str
 ) -> dict[str, str]:
     response = client.post(
-        f"/login/access-token", 
+        "/login/access-token", 
         data={
             "username": username, 
             "password": password,
