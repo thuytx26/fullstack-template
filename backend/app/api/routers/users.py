@@ -1,39 +1,33 @@
+import uuid
+
 from fastapi import (
-    APIRouter, 
-    Depends, 
-    HTTPException, 
+    APIRouter,
+    Depends,
+    HTTPException,
     status,
 )
-import uuid
-from sqlmodel import (
-    select, 
-    Session,
-    func
-)
+from sqlmodel import func, select
 
 from app.api.deps import (
-    SessionDep, 
-    TokenDep, 
     CurrentUserDep,
+    SessionDep,
     get_current_superuser,
 )
+from app.core.security import verify_password
+from app.models.team_model import Team
 from app.models.user_model import (
     User,
     UserCreate,
-    UserRegister,
     UserPublic,
-    UsersPublic,
     UserPublicWithTeam,
+    UserRegister,
+    UsersPublic,
     UserUpdate,
     UserUpdateMe,
     UserUpdatePassword,
 )
 from app.models.utils_model import Message
-from app.models.team_model import Team
-from app.core.security import get_password_hash
 from app.utils import crud
-from app.core.security import verify_password
-
 
 router = APIRouter(
     prefix="/users",
@@ -73,20 +67,17 @@ async def read_user_me(
 
 
 @router.patch(
-    "/me", 
+    "/me",
     response_model=UserPublic,
 )
 def update_user_me(
-    *, 
+    *,
     session: SessionDep,
-    user_in: UserUpdateMe, 
+    user_in: UserUpdateMe,
     current_user: CurrentUserDep,
 ):
     if user_in.name:
-        existing_user = crud.get_user_from_username(
-            session, 
-            user_in.name
-        )
+        existing_user = crud.get_user_from_username(session, user_in.name)
         if existing_user and existing_user.id != current_user.id:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
@@ -97,8 +88,7 @@ def update_user_me(
         team = session.get(Team, user_in.team_id)
         if not team:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, 
-                detail="Team not found"
+                status_code=status.HTTP_404_NOT_FOUND, detail="Team not found"
             )
 
     updated_user = crud.update_user_me(
@@ -106,7 +96,7 @@ def update_user_me(
         db_user=current_user,
         user_in=user_in,
     )
-    
+
     return updated_user
 
 
@@ -123,8 +113,8 @@ def update_user_password(
 ):
     # verify password
     if not verify_password(
-        plain_password=update_password.old_password, 
-        hashed_password=current_user.hashed_password
+        plain_password=update_password.old_password,
+        hashed_password=current_user.hashed_password,
     ):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -133,9 +123,9 @@ def update_user_password(
     if update_password.old_password == update_password.new_password:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="New password cannot be the same as the current one"
+            detail="New password cannot be the same as the current one",
         )
-    
+
     crud.update_password(
         session=session,
         db_user=current_user,
@@ -146,13 +136,13 @@ def update_user_password(
 
 
 @router.delete(
-    "/me", 
+    "/me",
     status_code=status.HTTP_204_NO_CONTENT,
 )
 def delete_user_me(
     *,
     session: SessionDep,
-    current_user: CurrentUserDep, 
+    current_user: CurrentUserDep,
 ):
     if current_user.is_superuser:
         raise HTTPException(
@@ -164,16 +154,9 @@ def delete_user_me(
 
 
 @router.get(
-    "/", 
-    dependencies=[Depends(get_current_superuser)],
-    response_model=UsersPublic
+    "/", dependencies=[Depends(get_current_superuser)], response_model=UsersPublic
 )
-def read_users(
-    *, 
-    session: SessionDep, 
-    offset: int = 0, 
-    limit: int = 100
-):
+def read_users(*, session: SessionDep, offset: int = 0, limit: int = 100):
     count_statement = select(func.count()).select_from(User)
     count = session.exec(count_statement).one()
 
@@ -183,32 +166,28 @@ def read_users(
 
 
 @router.post(
-    "/", 
-    response_model=UserPublic, 
+    "/",
+    response_model=UserPublic,
     dependencies=[Depends(get_current_superuser)],
     status_code=status.HTTP_201_CREATED,
 )
 def create_user(
-    *, 
+    *,
     session: SessionDep,
-    user_in: UserCreate, 
+    user_in: UserCreate,
 ):
-    
-    db_user = crud.get_user_from_username(
-        session, 
-        user_in.name
-    )
+    db_user = crud.get_user_from_username(session, user_in.name)
     if db_user:
         raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT, 
-            detail="User with this name already exists"
+            status_code=status.HTTP_409_CONFLICT,
+            detail="User with this name already exists",
         )
-    
+
     user = crud.create_user(
         session,
         user_in,
     )
-    
+
     return user
 
 
@@ -217,9 +196,9 @@ def create_user(
     response_model=UserPublicWithTeam,
 )
 def read_user(
-    *, 
+    *,
     session: SessionDep,
-    user_id: uuid.UUID, 
+    user_id: uuid.UUID,
     current_user: CurrentUserDep,
 ):
     user = session.get(User, user_id)
@@ -246,40 +225,36 @@ def read_user(
 
 
 @router.patch(
-    "/{user_id}", 
+    "/{user_id}",
     dependencies=[Depends(get_current_superuser)],
     response_model=UserPublic,
 )
 def update_user(
-    *, 
+    *,
     session: SessionDep,
     user_id: uuid.UUID,
-    user_in: UserUpdate, 
+    user_in: UserUpdate,
 ):
     db_user = session.get(User, user_id)
     if not db_user:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, 
-            detail="The user with this id does not exist in the system"
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="The user with this id does not exist in the system",
         )
-    
+
     if user_in.name:
-        existing_user = crud.get_user_from_username(
-            session, 
-            user_in.name
-        )
+        existing_user = crud.get_user_from_username(session, user_in.name)
         if existing_user and existing_user.id != user_id:
             raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT, 
-                detail="User with this name already exists"
+                status_code=status.HTTP_409_CONFLICT,
+                detail="User with this name already exists",
             )
-    
+
     if user_in.team_id:
         team = session.get(Team, user_in.team_id)
         if not team:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, 
-                detail="Team not found"
+                status_code=status.HTTP_404_NOT_FOUND, detail="Team not found"
             )
 
     db_user = crud.update_user(
@@ -291,20 +266,20 @@ def update_user(
 
 
 @router.delete(
-    "/{user_id}", 
+    "/{user_id}",
     dependencies=[Depends(get_current_superuser)],
     status_code=status.HTTP_204_NO_CONTENT,
 )
 def delete_user(
     *,
     session: SessionDep,
-    user_id: uuid.UUID, 
+    user_id: uuid.UUID,
 ):
     user = session.get(User, user_id)
     if not user:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, 
-            detail="The user with this id does not exist in the system"
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="The user with this id does not exist in the system",
         )
     if user.is_superuser:
         raise HTTPException(

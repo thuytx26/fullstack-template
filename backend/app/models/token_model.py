@@ -1,4 +1,3 @@
-from typing import Optional
 from sqlmodel import SQLModel
 
 
@@ -8,4 +7,4 @@ class Token(SQLModel):
 
 
 class TokenData(SQLModel):
-    username: Optional[str] = None
+    username: str | None = None

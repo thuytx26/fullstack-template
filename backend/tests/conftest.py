@@ -1,19 +1,16 @@
 import pytest
-from sqlmodel import SQLModel, Session, create_engine
-from sqlmodel.pool import StaticPool
 from fastapi.testclient import TestClient
+from sqlmodel import Session, SQLModel, create_engine
+from sqlmodel.pool import StaticPool
 
-
-from app.main import app
 from app.api.deps import get_session
-from tests.utils.users import (
-    get_superuser_token_headers,
-    get_normal_user_token_headers,
-)
-
-
 from app.core.config import settings
 from app.core.database import init_db
+from app.main import app
+from tests.utils.users import (
+    get_normal_user_token_headers,
+    get_superuser_token_headers,
+)
 
 
 @pytest.fixture(name="session", scope="module")
@@ -33,18 +30,16 @@ def session_fixture():
 def client_fixture(session: Session):
     def get_session_override():
         return session
-    
+
     app.dependency_overrides[get_session] = get_session_override
     client = TestClient(app)
-    client.base_url = str(client.base_url) + settings.API_V1_STR 
+    client.base_url = str(client.base_url) + settings.API_V1_STR
     yield client
     app.dependency_overrides.clear()
 
 
 @pytest.fixture(name="superuser_token_headers", scope="module")
-def superuser_token_headers_fixture(
-    client: TestClient
-) -> dict[str, str]:
+def superuser_token_headers_fixture(client: TestClient) -> dict[str, str]:
     return get_superuser_token_headers(client)
 
 
@@ -57,4 +52,4 @@ def normal_user_token_headers_fixture(
         client=client,
         session=session,
         username=settings.TEST_NORMAL_USER_NAME,
-        )
+    )

@@ -1,36 +1,29 @@
-from sqlmodel import Session
 from fastapi.testclient import TestClient
+from sqlmodel import Session
 
 from app.core.config import settings
-from tests.utils.generate_random_data import random_password
-from app.models.user_model import (
-    UserRegister,
-    UserUpdate
-)
+from app.models.user_model import UserRegister, UserUpdate
 from app.utils import crud
+from tests.utils.generate_random_data import random_password
 
 
 def user_authentication_headers(
-    client: TestClient,
-    username: str,
-    password: str
+    client: TestClient, username: str, password: str
 ) -> dict[str, str]:
     response = client.post(
-        "/login/access-token", 
+        "/login/access-token",
         data={
-            "username": username, 
+            "username": username,
             "password": password,
-        }
+        },
     )
     response = response.json()
-    access_token = response['access_token']
+    access_token = response["access_token"]
     header = {"Authorization": f"Bearer {access_token}"}
     return header
 
 
-def get_superuser_token_headers(
-    client: TestClient
-) -> dict[str, str]:
+def get_superuser_token_headers(client: TestClient) -> dict[str, str]:
     return user_authentication_headers(
         client=client,
         username=settings.FIRST_SUPERUSER_NAME,
@@ -45,7 +38,7 @@ def get_normal_user_token_headers(
     username: str,
 ) -> dict[str, str]:
     password = random_password()
-    
+
     existing_user = crud.get_user_from_username(session, username)
     if not existing_user:
         user_in = UserRegister(
@@ -73,6 +66,3 @@ def get_normal_user_token_headers(
         username=username,
         password=password,
     )
-    
-
-    

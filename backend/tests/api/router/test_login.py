@@ -1,14 +1,7 @@
-
-
-from fastapi.testclient import TestClient
 from fastapi import status
+from fastapi.testclient import TestClient
 
 from app.core.config import settings
-from app.models.user_model import UserCreate
-from tests.utils.generate_random_data import (
-    random_username,
-    random_password,
-) 
 
 
 def test_get_access_token(client: TestClient) -> None:
@@ -16,7 +9,7 @@ def test_get_access_token(client: TestClient) -> None:
         "username": settings.FIRST_SUPERUSER_NAME,
         "password": settings.FIRST_SUPERUSER_PASSWORD,
     }
-    r = client.post(f"/login/access-token", data=login_data)
+    r = client.post("/login/access-token", data=login_data)
     tokens = r.json()
     assert r.status_code == status.HTTP_200_OK
     assert "access_token" in tokens
@@ -28,7 +21,7 @@ def test_get_access_token_incorrect_password(client: TestClient) -> None:
         "username": settings.FIRST_SUPERUSER_NAME,
         "password": "incorrect",
     }
-    r = client.post(f"/login/access-token", data=login_data)
+    r = client.post("/login/access-token", data=login_data)
     assert r.status_code == status.HTTP_401_UNAUTHORIZED
 
 
@@ -36,7 +29,7 @@ def test_use_access_token(
     client: TestClient, superuser_token_headers: dict[str, str]
 ) -> None:
     r = client.post(
-        f"/login/test-token",
+        "/login/test-token",
         headers=superuser_token_headers,
     )
     result = r.json()

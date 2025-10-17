@@ -1,29 +1,28 @@
 import uuid
-from unittest.mock import patch
+from unittest.mock import patch  # noqa
+
 from fastapi import status
 from fastapi.testclient import TestClient
 from sqlmodel import Session, select
 
-from app.utils import crud
 from app.core.config import settings
 from app.core.security import verify_password
 from app.models.user_model import (
-    User, 
+    User,
     UserCreate,
     UserUpdate,
-
 )
+from app.utils import crud
 from tests.utils.generate_random_data import (
-    random_username, 
     random_password,
-
+    random_username,
 )
 
 
 def test_get_users_superuser_me(
     client: TestClient, superuser_token_headers: dict[str, str]
 ) -> None:
-    r = client.get(f"/users/me", headers=superuser_token_headers)
+    r = client.get("/users/me", headers=superuser_token_headers)
     current_user = r.json()
     assert current_user
     assert current_user["is_superuser"]
@@ -33,7 +32,7 @@ def test_get_users_superuser_me(
 def test_get_users_normal_user_me(
     client: TestClient, normal_user_token_headers: dict[str, str]
 ) -> None:
-    r = client.get(f"/users/me", headers=normal_user_token_headers)
+    r = client.get("/users/me", headers=normal_user_token_headers)
     current_user = r.json()
     assert current_user
     assert current_user["is_superuser"] is False
@@ -52,7 +51,7 @@ def test_create_user(
     password = random_password()
     data = {"name": username, "password": password}
     r = client.post(
-        f"/users/",
+        "/users/",
         headers=superuser_token_headers,
         json=data,
     )
@@ -93,7 +92,7 @@ def test_get_existing_user_current_user(client: TestClient, session: Session) ->
         "username": username,
         "password": password,
     }
-    r = client.post(f"/login/access-token", data=login_data)
+    r = client.post("/login/access-token", data=login_data)
     tokens = r.json()
     a_token = tokens["access_token"]
     headers = {"Authorization": f"Bearer {a_token}"}
@@ -129,7 +128,7 @@ def test_create_user_existing_username(
     crud.create_user(session=session, user_create=user_in)
     data = {"name": username, "password": password}
     r = client.post(
-        f"/users/",
+        "/users/",
         headers=superuser_token_headers,
         json=data,
     )
@@ -145,7 +144,7 @@ def test_create_user_by_normal_user(
     password = random_password()
     data = {"name": username, "password": password}
     r = client.post(
-        f"/users/",
+        "/users/",
         headers=normal_user_token_headers,
         json=data,
     )
@@ -165,7 +164,7 @@ def test_retrieve_users(
     user_in2 = UserCreate(name=username2, password=password2)
     crud.create_user(session=session, user_create=user_in2)
 
-    r = client.get(f"/users/", headers=superuser_token_headers)
+    r = client.get("/users/", headers=superuser_token_headers)
     all_users = r.json()
 
     assert len(all_users["data"]) > 1
@@ -181,7 +180,7 @@ def test_update_user_me(
     username = random_username()
     data = {"secret_name": secret_name, "name": username}
     r = client.patch(
-        f"/users/me",
+        "/users/me",
         headers=normal_user_token_headers,
         json=data,
     )
@@ -210,7 +209,7 @@ def test_update_password_me(
         "new_password": new_password,
     }
     r = client.patch(
-        f"/users/me/password",
+        "/users/me/password",
         headers=superuser_token_headers,
         json=data,
     )
@@ -229,14 +228,16 @@ def test_update_password_me(
         "new_password": settings.FIRST_SUPERUSER_PASSWORD,
     }
     r = client.patch(
-        f"/users/me/password",
+        "/users/me/password",
         headers=superuser_token_headers,
         json=old_data,
     )
     session.refresh(user_session)
 
     assert r.status_code == 200
-    assert verify_password(settings.FIRST_SUPERUSER_PASSWORD, user_session.hashed_password)
+    assert verify_password(
+        settings.FIRST_SUPERUSER_PASSWORD, user_session.hashed_password
+    )
 
 
 def test_update_password_me_incorrect_password(
@@ -246,7 +247,7 @@ def test_update_password_me_incorrect_password(
     new_password = random_password()
     data = {"old_password": wrong_password, "new_password": new_password}
     r = client.patch(
-        f"/users/me/password",
+        "/users/me/password",
         headers=superuser_token_headers,
         json=data,
     )
@@ -255,7 +256,7 @@ def test_update_password_me_incorrect_password(
     assert updated_user["detail"] == "Incorrect password"
 
 
-def name_exists(
+def test_update_name_exists(
     client: TestClient, normal_user_token_headers: dict[str, str], session: Session
 ) -> None:
     username = random_username()
@@ -265,7 +266,7 @@ def name_exists(
 
     data = {"name": user.name}
     r = client.patch(
-        f"/users/me",
+        "/users/me",
         headers=normal_user_token_headers,
         json=data,
     )
@@ -281,7 +282,7 @@ def test_update_password_me_same_password_error(
         "new_password": settings.FIRST_SUPERUSER_PASSWORD,
     }
     r = client.patch(
-        f"/users/me/password",
+        "/users/me/password",
         headers=superuser_token_headers,
         json=data,
     )
@@ -297,7 +298,7 @@ def test_register_user(client: TestClient, session: Session) -> None:
     password = random_password()
     data = {"name": username, "password": password}
     r = client.post(
-        f"/users/signup",
+        "/users/signup",
         json=data,
     )
     assert r.status_code == status.HTTP_201_CREATED
@@ -319,7 +320,7 @@ def test_register_user_already_exists_error(client: TestClient) -> None:
         "secret_name": secret_name,
     }
     r = client.post(
-        f"/users/signup",
+        "/users/signup",
         json=data,
     )
     assert r.status_code == status.HTTP_409_CONFLICT
@@ -398,13 +399,13 @@ def test_delete_user_me(client: TestClient, session: Session) -> None:
         "username": username,
         "password": password,
     }
-    r = client.post(f"/login/access-token", data=login_data)
+    r = client.post("/login/access-token", data=login_data)
     tokens = r.json()
     a_token = tokens["access_token"]
     headers = {"Authorization": f"Bearer {a_token}"}
 
     r = client.delete(
-        f"/users/me",
+        "/users/me",
         headers=headers,
     )
     assert r.status_code == status.HTTP_204_NO_CONTENT
@@ -420,7 +421,7 @@ def test_delete_user_me_as_superuser(
     client: TestClient, superuser_token_headers: dict[str, str]
 ) -> None:
     r = client.delete(
-        f"/users/me",
+        "/users/me",
         headers=superuser_token_headers,
     )
     assert r.status_code == 403
@@ -459,7 +460,9 @@ def test_delete_user_not_found(
 def test_delete_user_current_super_user_error(
     client: TestClient, superuser_token_headers: dict[str, str], session: Session
 ) -> None:
-    super_user = crud.get_user_from_username(session=session, username=settings.FIRST_SUPERUSER_NAME)
+    super_user = crud.get_user_from_username(
+        session=session, username=settings.FIRST_SUPERUSER_NAME
+    )
     assert super_user
     user_id = super_user.id
 

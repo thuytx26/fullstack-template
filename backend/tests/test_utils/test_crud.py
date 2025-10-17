@@ -1,17 +1,17 @@
-from sqlmodel import Session
 from fastapi.encoders import jsonable_encoder
+from sqlmodel import Session
 
-from tests.utils.generate_random_data import (
-    random_username,
-    random_password,
-)
-from app.models.user_model import(
+from app.core.security import verify_password
+from app.models.user_model import (
     User,
     UserCreate,
     UserUpdate,
 )
 from app.utils import crud
-from app.core.security import verify_password
+from tests.utils.generate_random_data import (
+    random_password,
+    random_username,
+)
 
 
 def test_check_if_user_is_superuser(session: Session) -> None:

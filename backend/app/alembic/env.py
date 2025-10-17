@@ -6,8 +6,8 @@ from sqlalchemy import pool
 
 from alembic import context
 
-from app.models.user_model import User
-from app.models.team_model import Team
+from app.models.user_model import User  # noqa: F401
+from app.models.team_model import Team  # noqa: F401
 
 from app.core.config import settings
 
@@ -26,7 +26,7 @@ if config.config_file_name is not None:
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
 
-from app.core.database import SQLModel
+from app.core.database import SQLModel  # noqa: E402
 
 target_metadata = SQLModel.metadata
 

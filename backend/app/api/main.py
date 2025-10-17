@@ -1,7 +1,6 @@
 from fastapi import APIRouter
 
-
-from app.api.routers import teams, users, login
+from app.api.routers import login, teams, users
 
 api_router = APIRouter()
 
