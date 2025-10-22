@@ -10,16 +10,13 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
 
     # db
-    database_parent_directory: str = "/mnt/c/Users/ASUS/Documents"
     database_name: str = "database.db"
 
     @computed_field
     @property
     def SQLALCHEMY_DATABASE_URI(self) -> str:
-        database_url = (
-            f"sqlite:///{self.database_parent_directory}/{self.database_name}"
-        )
-        return database_url
+        database_url = f"sqlite:///{self.database_name}"
+        return str(database_url)
 
     # first superuser
     FIRST_SUPERUSER_NAME: str = Field(max_length=255)

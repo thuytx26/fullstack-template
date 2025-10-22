@@ -1,0 +1,9 @@
+services:
+  backend:
+    build:
+      context: ./backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    command: bash -c "scripts/prestart.sh && fastapi dev app/main.py --host 0.0.0.0"
