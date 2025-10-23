@@ -30,7 +30,9 @@ services:
       - POSTGRES_PORT=5432
     command: bash -c "scripts/prestart.sh && fastapi dev app/main.py --host 0.0.0.0"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+        restart: true
       
 volumes:
   app-db-data:
