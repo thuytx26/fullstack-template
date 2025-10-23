@@ -31,8 +31,12 @@ target_metadata = SQLModel.metadata
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
 
-def get_url():
-    return str(settings.SQLALCHEMY_DATABASE_URI)
+def get_url() -> str:
+    # Render the SQLAlchemy database URL object as a string.
+    # hide_password=False is used to ensure the password is included in the URL
+    # for Alembic to connect to the database.
+    return settings.SQLALCHEMY_DATABASE_URL_OBJECT.\
+        render_as_string(hide_password=False)
 
 config.set_main_option("sqlalchemy.url", get_url())
 

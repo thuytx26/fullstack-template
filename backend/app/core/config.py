@@ -1,5 +1,6 @@
 from pydantic import Field, computed_field
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from sqlalchemy import URL
 
 
 class Settings(BaseSettings):
@@ -10,13 +11,24 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
 
     # db
-    database_name: str = "database.db"
+    POSTGRES_HOST: str
+    POSTGRES_PORT: int
+    POSTGRES_DB: str
+    POSTGRES_USER: str
+    POSTGRES_PASSWORD: str
 
     @computed_field
     @property
-    def SQLALCHEMY_DATABASE_URI(self) -> str:
-        database_url = f"sqlite:///{self.database_name}"
-        return str(database_url)
+    def SQLALCHEMY_DATABASE_URL_OBJECT(self) -> URL:
+        url_object = URL.create(
+            "postgresql+psycopg2",
+            username=self.POSTGRES_USER,
+            password=self.POSTGRES_PASSWORD,
+            host=self.POSTGRES_HOST,
+            port=self.POSTGRES_PORT,
+            database=self.POSTGRES_DB,
+        )
+        return url_object
 
     # first superuser
     FIRST_SUPERUSER_NAME: str = Field(max_length=255)

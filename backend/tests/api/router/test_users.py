@@ -176,9 +176,8 @@ def test_retrieve_users(
 def test_update_user_me(
     client: TestClient, normal_user_token_headers: dict[str, str], session: Session
 ) -> None:
-    secret_name = "Updated Secret Name"
     username = random_username()
-    data = {"secret_name": secret_name, "name": username}
+    data = {"name": username}
     r = client.patch(
         "/users/me",
         headers=normal_user_token_headers,
@@ -187,12 +186,10 @@ def test_update_user_me(
     assert r.status_code == 200
     updated_user = r.json()
     assert updated_user["name"] == username
-    assert updated_user["secret_name"] == secret_name
 
     user_session = crud.get_user_from_username(session, username)
     assert user_session
     assert user_session.name == username
-    assert user_session.secret_name == secret_name
 
     # Revert to the old username to keep consistency in test
     user_update = UserUpdate(name=settings.TEST_NORMAL_USER_NAME)
@@ -313,11 +310,9 @@ def test_register_user(client: TestClient, session: Session) -> None:
 
 def test_register_user_already_exists_error(client: TestClient) -> None:
     password = random_username()
-    secret_name = random_password()
     data = {
         "name": settings.FIRST_SUPERUSER_NAME,
         "password": password,
-        "secret_name": secret_name,
     }
     r = client.post(
         "/users/signup",
@@ -335,7 +330,8 @@ def test_update_user(
     user_in = UserCreate(name=username, password=password)
     user = crud.create_user(session=session, user_create=user_in)
 
-    data = {"secret_name": "Updated_secret_name"}
+    updated_username = "Updated_name"
+    data = {"name": updated_username}
     r = client.patch(
         f"/users/{user.id}",
         headers=superuser_token_headers,
@@ -343,19 +339,17 @@ def test_update_user(
     )
     assert r.status_code == 200
     updated_user = r.json()
+    assert updated_user["name"] == updated_username
 
-    assert updated_user["secret_name"] == "Updated_secret_name"
-
-    user_session = crud.get_user_from_username(session, username)
-    session.refresh(user_session)
+    user_session = crud.get_user_from_username(session, updated_username)
     assert user_session
-    assert user_session.secret_name == "Updated_secret_name"
+    assert user_session.name == updated_username
 
 
 def test_update_user_not_exists(
     client: TestClient, superuser_token_headers: dict[str, str]
 ) -> None:
-    data = {"secret_name": "Updated_secret_name"}
+    data = {"name": "Updated_name"}
     r = client.patch(
         f"/users/{uuid.uuid4()}",
         headers=superuser_token_headers,

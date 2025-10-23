@@ -13,9 +13,6 @@ if TYPE_CHECKING:
 
 class UserBase(SQLModel):
     name: str = Field(index=True, unique=True, max_length=255)
-    secret_name: str | None = Field(default=None)
-    age: int | None = Field(default=None, index=True)
-    money: Decimal = Field(default=0, max_digits=5, decimal_places=3)
     team_id: uuid.UUID | None = Field(default=None, foreign_key="team.id")
     is_superuser: bool = Field(
         default=False, nullable=False, sa_column_kwargs={"server_default": "0"}
@@ -69,7 +66,6 @@ class UserUpdate(UserBase):
 
 class UserUpdateMe(SQLModel):
     name: str | None = Field(default=None, max_length=255)
-    secret_name: str | None = Field(default=None)
     age: int | None = Field(default=None, index=True)
     money: Decimal | None = Field(default=None, max_digits=5, decimal_places=3)
     team_id: uuid.UUID | None = Field(default=None, foreign_key="team.id")
