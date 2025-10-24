@@ -10,6 +10,11 @@ class Settings(BaseSettings):
     SECRET_KEY: str = Field(..., min_length=32)
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
 
+    BACKEND_CORS_ORIGINS: list[str] = Field(
+        default=["http://localhost", "http://localhost:8080"],
+        description="List of origins that are allowed to make cross-origin requests",
+    )
+
     # db
     POSTGRES_HOST: str
     POSTGRES_PORT: int
