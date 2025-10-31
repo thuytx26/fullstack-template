@@ -50,8 +50,3 @@ services:
       
 volumes:
   app-db-data:
-
-networks:
-  net:
-    name: app-network
-    driver: bridge

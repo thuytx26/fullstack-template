@@ -35,6 +35,10 @@ class Settings(BaseSettings):
         )
         return url_object
 
+    DOCKER_IMAGE_BACKEND: str
+    TAG: str
+    BACKEND_PORT: int
+
     # first superuser
     FIRST_SUPERUSER_NAME: str = Field(max_length=255)
     FIRST_SUPERUSER_PASSWORD: str = Field(min_length=8, max_length=40)
