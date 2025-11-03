@@ -1,11 +1,10 @@
 import pytest
 from fastapi.testclient import TestClient
-from sqlmodel import Session, SQLModel, create_engine
-from sqlmodel.pool import StaticPool
+from sqlmodel import Session
 
 from app.api.deps import get_session
 from app.core.config import settings
-from app.core.database import init_db
+from app.core.database import engine, init_db
 from app.main import app
 from tests.utils.users import (
     get_normal_user_token_headers,
@@ -15,12 +14,12 @@ from tests.utils.users import (
 
 @pytest.fixture(name="session", scope="module")
 def session_fixture():
-    engine = create_engine(
-        "sqlite://",
-        connect_args={"check_same_thread": False},
-        poolclass=StaticPool,
-    )
-    SQLModel.metadata.create_all(engine)
+    # engine = create_engine(
+    #     "sqlite://",
+    #     connect_args={"check_same_thread": False},
+    #     poolclass=StaticPool,
+    # )
+    # SQLModel.metadata.create_all(engine)
     with Session(engine) as session:
         init_db(session)
         yield session
