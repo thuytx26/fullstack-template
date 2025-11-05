@@ -1,0 +1,29 @@
+services:  
+  db:
+    restart: "no"
+    ports:
+      - "${POSTGRES_PORT?Variable not set}:5432"
+  
+  backend:
+    restart: "no"
+    ports:
+      - "${BACKEND_PORT?Variable not set}:8000"
+    build:
+      context: ./backend
+    command:
+      - fastapi
+      - run
+      - --reload
+      - "app/main.py"
+    develop:
+      watch:
+        - path: ./backend
+          action: sync
+          target: /app
+          ignore:
+            - ./backend/.venv
+            - .venv
+        - path: ./backend/pyproject.toml
+          action: rebuild
+    volumes:
+      - ./backend/htmlcov:/app/htmlcov

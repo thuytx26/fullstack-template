@@ -1,3 +1,5 @@
+from typing import Literal
+
 from pydantic import Field, computed_field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from sqlalchemy import URL
@@ -10,6 +12,7 @@ class Settings(BaseSettings):
     SECRET_KEY: str = Field(..., min_length=32)
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
 
+    ENVIRONMENT: Literal["local", "staging", "production"] = "local"
     BACKEND_CORS_ORIGINS: list[str] = Field(
         default=["http://localhost", "http://localhost:8080"],
         description="List of origins that are allowed to make cross-origin requests",
