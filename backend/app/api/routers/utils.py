@@ -1,10 +1,11 @@
 from fastapi import APIRouter
 
 router = APIRouter(
-    prefix='/utils',
-    tags=['utils'],
+    prefix="/utils",
+    tags=["utils"],
 )
 
-@router.get('/health_check')
+
+@router.get("/health_check")
 def health_check() -> bool:
     return True
