@@ -6,6 +6,6 @@ router = APIRouter(
 )
 
 
-@router.get("/health_check")
+@router.get("/health-check")
 def health_check() -> bool:
     return True
