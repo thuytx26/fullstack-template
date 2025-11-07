@@ -3,6 +3,12 @@ FROM python:3.12-slim-trixie
 ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
+
+# Install curl for health-check
+RUN apt-get update && \
+    apt-get install -y curl && \
+    rm -rf /var/lib/apt/lists/*
+
 # Install uv
 COPY --from=ghcr.io/astral-sh/uv:0.8.17 /uv /uvx /bin/
 
