@@ -29,7 +29,7 @@ def create_user_private(
 
     user = crud.create_user(
         session=session,
-        user_in=user_in,
+        user_create=user_in,
     )
 
     return user
