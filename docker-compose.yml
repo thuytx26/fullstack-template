@@ -37,7 +37,6 @@ services:
     environment:
       - POSTGRES_HOST=db
       - POSTGRES_PORT=5432
-      - API_V1_STR=${API_V1_STR:-/api/v1}
     depends_on:
       db:
         condition: service_healthy
