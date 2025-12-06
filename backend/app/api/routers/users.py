@@ -154,7 +154,9 @@ def delete_user_me(
 
 
 @router.get(
-    "/", dependencies=[Depends(get_current_superuser)], response_model=UsersPublic
+    "/",
+    dependencies=[Depends(get_current_superuser)],
+    response_model=UsersPublic,
 )
 def read_users(*, session: SessionDep, offset: int = 0, limit: int = 100):
     count_statement = select(func.count()).select_from(User)

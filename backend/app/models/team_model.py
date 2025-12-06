@@ -13,14 +13,23 @@ class TeamBase(SQLModel):
     skill_level: int | None = Field(default=1, ge=1, le=10)
 
 
+# Model
+
+
 class Team(TeamBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
 
     users: list["User"] = Relationship(back_populates="team")
 
 
+# Create
+
+
 class TeamCreate(TeamBase):
     pass
+
+
+# Read
 
 
 class TeamPublic(TeamBase):
@@ -31,6 +40,9 @@ class TeamPublicWithUsers(TeamPublic):
     users: list["UserPublic"] = []
 
 
-class TeamUpdate(SQLModel):
+# Update
+
+
+class TeamUpdate(TeamBase):
     name: str | None = None
-    headquarters: str | None = None
+    skill_level: int | None = None

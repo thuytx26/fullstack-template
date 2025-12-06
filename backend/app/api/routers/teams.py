@@ -4,6 +4,7 @@ from typing import Annotated
 from fastapi import (
     APIRouter,
     Body,
+    Depends,
     HTTPException,
     status,
 )
@@ -11,7 +12,7 @@ from sqlmodel import select
 
 from app.api.deps import (
     SessionDep,
-    # TokenDep
+    get_current_superuser,
 )
 from app.models.team_model import (
     Team,
@@ -27,12 +28,18 @@ router = APIRouter(
 )
 
 
-@router.post("/", response_model=TeamPublic, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/",
+    dependencies=[
+        Depends(get_current_superuser),
+    ],
+    response_model=TeamPublic,
+    status_code=status.HTTP_201_CREATED,
+)
 def create_team(
     *,
     team: Annotated[TeamCreate, Body(title="Team to create")],
     session: SessionDep,
-    # token: TokenDep
 ):
     db_team = Team.model_validate(team)
     session.add(db_team)
@@ -41,7 +48,13 @@ def create_team(
     return db_team
 
 
-@router.get("/{team_id}", response_model=TeamPublicWithUsers)
+@router.get(
+    "/{team_id}",
+    dependencies=[
+        Depends(get_current_superuser),
+    ],
+    response_model=TeamPublicWithUsers,
+)
 def read_team(*, team_id: uuid.UUID, session: SessionDep):
     team = session.get(Team, team_id)
     if not team:
@@ -51,13 +64,25 @@ def read_team(*, team_id: uuid.UUID, session: SessionDep):
     return team
 
 
-@router.get("/", response_model=list[TeamPublic])
+@router.get(
+    "/",
+    dependencies=[
+        Depends(get_current_superuser),
+    ],
+    response_model=list[TeamPublic],
+)
 def read_teams(*, session: SessionDep, offset: int = 0, limit: int = 100):
     teams = session.exec(select(Team).offset(offset).limit(limit)).all()
     return teams
 
 
-@router.patch("/{team_id}", response_model=TeamPublic)
+@router.patch(
+    "/{team_id}",
+    dependencies=[
+        Depends(get_current_superuser),
+    ],
+    response_model=TeamPublic,
+)
 def update_team(*, team_id: uuid.UUID, team: TeamUpdate, session: SessionDep):
     db_team = session.get(Team, team_id)
     if not db_team:
@@ -72,7 +97,13 @@ def update_team(*, team_id: uuid.UUID, team: TeamUpdate, session: SessionDep):
     return db_team
 
 
-@router.delete("/{team_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/{team_id}",
+    dependencies=[
+        Depends(get_current_superuser),
+    ],
+    status_code=status.HTTP_204_NO_CONTENT,
+)
 def delete_team(*, team_id: uuid.UUID, session: SessionDep):
     team = session.get(Team, team_id)
     if not team:
