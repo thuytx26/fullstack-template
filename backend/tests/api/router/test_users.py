@@ -330,7 +330,7 @@ def test_update_user(
     user_in = UserCreate(name=username, password=password)
     user = crud.create_user(session=session, user_create=user_in)
 
-    updated_username = "Updated_name"
+    updated_username = random_username()
     data = {"name": updated_username}
     r = client.patch(
         f"/users/{user.id}",
@@ -349,7 +349,8 @@ def test_update_user(
 def test_update_user_not_exists(
     client: TestClient, superuser_token_headers: dict[str, str]
 ) -> None:
-    data = {"name": "Updated_name"}
+    updated_username = random_username()
+    data = {"name": updated_username}
     r = client.patch(
         f"/users/{uuid.uuid4()}",
         headers=superuser_token_headers,
