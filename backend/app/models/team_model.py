@@ -45,4 +45,4 @@ class TeamPublicWithUsers(TeamPublic):
 
 class TeamUpdate(TeamBase):
     name: str | None = None
-    skill_level: int | None = None
+    skill_level: int | None = Field(default=None, ge=1, le=10)
