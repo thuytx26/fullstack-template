@@ -21,6 +21,7 @@ from app.models.team_model import (
     TeamPublicWithUsers,
     TeamUpdate,
 )
+from app.utils import team_crud
 
 router = APIRouter(
     prefix="/teams",
@@ -41,10 +42,7 @@ def create_team(
     team: Annotated[TeamCreate, Body(title="Team to create")],
     session: SessionDep,
 ):
-    db_team = Team.model_validate(team)
-    session.add(db_team)
-    session.commit()
-    session.refresh(db_team)
+    db_team = team_crud.create_team(session, team)
     return db_team
 
 
@@ -84,16 +82,7 @@ def read_teams(*, session: SessionDep, offset: int = 0, limit: int = 100):
     response_model=TeamPublic,
 )
 def update_team(*, team_id: uuid.UUID, team: TeamUpdate, session: SessionDep):
-    db_team = session.get(Team, team_id)
-    if not db_team:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Team not found"
-        )
-    team_data = team.model_dump(exclude_unset=True)
-    db_team.sqlmodel_update(team_data)
-    session.add(db_team)
-    session.commit()
-    session.refresh(db_team)
+    db_team = team_crud.update_team(team_id, team, session)
     return db_team
 
 
@@ -105,10 +94,4 @@ def update_team(*, team_id: uuid.UUID, team: TeamUpdate, session: SessionDep):
     status_code=status.HTTP_204_NO_CONTENT,
 )
 def delete_team(*, team_id: uuid.UUID, session: SessionDep):
-    team = session.get(Team, team_id)
-    if not team:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Team not found"
-        )
-    session.delete(team)
-    session.commit()
+    team_crud.delete_team(team_id, session)

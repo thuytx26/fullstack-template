@@ -12,3 +12,15 @@ def random_username() -> str:
 
 def random_password() -> str:
     return random_lower_string(k=8)
+
+
+def random_teamname() -> str:
+    return random_lower_string(k=16)
+
+
+def random_headquarters() -> str:
+    return random_lower_string(k=32)
+
+
+def random_skill_level() -> int:
+    return random.randint(0, 10)
